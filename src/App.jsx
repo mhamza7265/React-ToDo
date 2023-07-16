@@ -20,9 +20,11 @@ const App = () => {
   const [searchedData , setSearchedData] = useState([]);
   const [current , setCurrent] = useState([]);
   const [completed , setCompleted] = useState([]);
+  const [select , setSelect] = useState("");
+  const [err , setErr] = useState(false);
 
   const DeletePost = (btn) =>{
-    let idx = btn.target.parentNode.getAttribute('id');
+    let idx = btn.getAttribute('id');
     let idxx = Number(idx);
     let index = list.map(function(obj){return obj.id}).indexOf(idxx);
     let newlist = list.slice();
@@ -35,10 +37,13 @@ const App = () => {
   }
 
   const DeletePost2 = (btn) =>{
-    let idxz = btn.target.parentNode.getAttribute('id');
+    let idxz = btn.getAttribute('id');
     let idxxx = Number(idxz);
     let indexx = current.map(function(objj){return objj.id}).indexOf(idxxx);
     let curr = current.slice();
+    console.log(current);
+    console.log(idxxx)
+    console.log(indexx)
     curr.splice(indexx , 1)
     setCurrent(curr);
     let cur = current.at(indexx);
@@ -48,8 +53,9 @@ const App = () => {
   }
 
   const DeletePost3 = (btn) =>{
-    let idz = btn.target.parentNode.getAttribute('id');
+    let idz = btn.getAttribute('id');
     let idzz = Number(idz);
+    console.log(idzz)
     let indexz = completed.map(function(obj){return obj.id}).indexOf(idzz);
     let complete = completed.slice();
     complete.splice(indexz, 1)
@@ -57,16 +63,21 @@ const App = () => {
   }
 
   const TodoStructure = ({index , id , content}) => {
+    let d = new Date();
+    let y = d.getFullYear();
+    let m = d.getMonth();
+    let day = d.getDate();
     return(
       <div className="row" id={id}>
         <p className="sr-no">{index+1}</p>
         <input className="content" defaultValue={content}/>
-        <button className="dlt-btn" onClick={(e) => DeletePost(e)}>{CheckIcon()}</button>
+        <p className='date'>{day + '-' + m}</p>
+        <button className="dlt-btn" onClick={(e) => DeletePost(e.target.parentNode)}>{'\u2713'}</button>
       </div>
     )
   }
 
-  const TodoStructure2 = ({index , id , content}) => {
+  const TodoStructureTwo = ({index , id , content}) => {
     return(
       <div className="row" id={id}>
         <p className="sr-no">{index+1}</p>
@@ -75,40 +86,67 @@ const App = () => {
     )
   }
 
-  const TodoStructure3 = ({index , id , content}) => {
+  const TodoStructureThree = ({index , id , content}) => {
+    let d = new Date();
+    let y = d.getFullYear();
+    let m = d.getMonth();
+    let day = d.getDate();
     return(
       <div className="row" id={id}>
         <p className="sr-no">{index+1}</p>
         <input className="content" defaultValue={content}/>
-        <button className="dlt-btn" onClick={(e) => DeletePost2(e)}>{CheckIcon()}</button>
+        <p className='date'>{day + '-' + m}</p>
+        <button className="dlt-btn" onClick={(e) => DeletePost2(e.target.parentNode)}>{'\u2713'}</button>
       </div>
     )
   }
 
-  const TodoStructure4 = ({index , id , content}) => {
+  const TodoStructureFour = ({index , id , content}) => {
+    let d = new Date();
+    let y = d.getFullYear();
+    let m = d.getMonth();
+    let day = d.getDate();
     return(
       <div className="row" id={id}>
         <p className="sr-no">{index+1}</p>
         <input className="content" defaultValue={content}/>
-        <button className="dlt-btn" onClick={(e) => DeletePost3(e)}>{DeleteIcon()}</button>
+        <p className='date'>{day + '-' + m}</p>
+        <button className="dlt-btn" onClick={(e) => DeletePost3(e.target.parentNode)}>{'\u2421'}</button>
       </div>
     )
   }
 
   const handleClick = (search) => {
-    const listid = list.length;
+    const listid = Math.floor(Math.random() * 1000000);
     const obj = {id:listid, text:search};
     const lists = list.slice();
-    listData != "" ? lists.push(obj):null;
-    setList(lists)
+    listData != "" ? lists.unshift(obj):null;
+    setList(lists);
+    setListData("");
   };
-    
-  const searchhandleClick = () => {
-    let search = searchTerm;
-    let newarr = list.filter(function(el){
+  const searchhandleClick = (searchdata) => {
+    var selectt;
+    if(select == "list"){
+      selectt = list;
+    }else if(select == "current"){
+      selectt = current;
+    }else{
+      selectt = completed;
+    }
+    let search = searchdata;
+    let newarr = selectt.filter(function(el){
       return el.text == search;
     })
     setSearchedData(newarr);
+    newarr.length == 0 ? setErr(true) : setErr(false);
+    if(searchdata == 0){
+      setErr(false);
+      setSearchTerm("");
+    };
+  }
+
+  const NotFound = () => {
+    return <h5 className='n-found'>Not Found</h5>
   }
 
   return(
@@ -125,33 +163,44 @@ const App = () => {
           </div>
           <h5>SEARCH</h5>
           <div className='input-field-2'>
+            <select className='select' defaultValue="" value={select} onChange={e => setSelect(e.target.value)}>
+              <option value=""></option>
+              <option value="list">Tasks To Do</option>
+              <option value="current">Tasks In Progress</option>
+              <option value="completed">Tasks Completed</option>
+            </select>
             <input placeholder='Search...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-            <button onClick={() => searchhandleClick()}>{SearchIcon()}</button>
-            <button onClick={() => setSearchTerm("")}>{RefreshIcon()}</button>
+            <button onClick={() => searchhandleClick(searchTerm)}>{SearchIcon()}</button>
+            <button onClick={() => searchhandleClick(0)}>{RefreshIcon()}</button>
+          </div>
+          <div className='search-div'>
+            {searchedData != "" && <h5>{searchedData.length} TASK{searchedData.length > 1 ? "S": null} FOUND</h5>}
+            {searchedData.map((item, key) => (
+              <TodoStructureTwo index={key} id={item.id} content={item.text}/>
+              ))}
+            {err == true? <NotFound/>  : null}
           </div>
         </div>
         <div className='container-div'>
-          <h5>{list.length == 0? "NO":list.length} TASKS TO DO</h5>
+          <h5>{list.length == 0? "NO":list.length} TASK{list.length > 1 ? "S": null} TO DO</h5>
           <div className="container">
             <div className='inner'>
-              {searchTerm == ""? (list.map((item, key) => (
+              {list.map((item, key) => (
                 <TodoStructure index={key} id={item.id} content={item.text}/>
-                ))):searchedData.map((item, key) => (
-                <TodoStructure2 index={key} id={item.id} content={item.text}/>
                 ))}
             </div>
           </div>
         </div>
         <div className="container2-div">
-          <h5>{current.length == 0? "NO":current.length} TASKS IN PROGRESS</h5>
+          <h5>{current.length == 0? "NO":current.length} TASK{current.length > 1 ? "S": null} IN PROGRESS</h5>
           {current.map((item, key) => (
-            <TodoStructure3 index={key} id={item.id} content={item.text}/>
+            <TodoStructureThree index={key} id={item.id} content={item.text}/>
           ))}
         </div>
         <div className="container3-div">
-          <h5>{completed.length == 0? null:completed.length} TASKS COMPLETED {completed.length == 0? "(Empty)":null}</h5>
+          <h5>{completed.length == 0? null:completed.length} TASK{completed.length > 1 ? "S": null} COMPLETED {completed.length == 0? "(Empty)":null}</h5>
             {completed.map((item, key) => (
-              <TodoStructure4 index={key} id={item.id} content={item.text}/>
+              <TodoStructureFour index={key} id={item.id} content={item.text}/>
             ))}
         </div>
               
